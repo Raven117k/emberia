@@ -5,9 +5,9 @@ class HomeDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
-      body: CustomScrollView(
+    return Container(
+      color: const Color(0xFF09090B),
+      child: CustomScrollView(
         slivers: [
           _buildHeader(),
           _buildDailySuggestions(),
@@ -15,7 +15,6 @@ class HomeDashboardScreen extends StatelessWidget {
           _buildMatchActivity(),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
@@ -27,7 +26,7 @@ class HomeDashboardScreen extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: EdgeInsets.only(left: 16, bottom: 16),
         title: Text(
-          "Good evening,\nAlex",
+          "Welcome Back, Alex",
           style: TextStyle(
             color: Color(0xFFFAFAFA),
             fontWeight: FontWeight.bold,
@@ -35,15 +34,6 @@ class HomeDashboardScreen extends StatelessWidget {
           ),
         ),
       ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            backgroundImage: NetworkImage(
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuATq1D10kdlkPQhy4DU7NGwb_xLc_e15TAyYdg-Cum0v6t286oEsfFkx5PzsG4w1Lp8bj31RWygUGt3yvO3Eao5XLC1HqgohQW2Lomjz27aCE4TPqMFQErg984tj3Lfv5H1lgPsDNsUJ4Gxs1itJGNJVRQ7F7QOkK963mSb98Yd-7J81pgnaNqmjrgaAjFh820njHyml_MUD50CRPTNt8u4xDFUmABj8lUbce_QevIkOtYBinmScKRIUoFnZXLSd1JkvqbQDcb5LbI'),
-          ),
-        ),
-      ],
     );
   }
 
@@ -362,30 +352,4 @@ class HomeDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      backgroundColor: const Color(0xFF09090B),
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFEC4899),
-      unselectedItemColor: const Color(0xFFA1A1AA),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite),
-          label: "Matches",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat_bubble),
-          label: "Chat",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Profile",
-        ),
-      ],
-    );
-  }
 }

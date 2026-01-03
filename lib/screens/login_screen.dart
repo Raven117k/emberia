@@ -1,5 +1,3 @@
-// ignore_for_file: unused_local_variable
-
 import 'package:app/screens/onboarding_philosophy_screen.dart';
 import 'package:flutter/material.dart';
 

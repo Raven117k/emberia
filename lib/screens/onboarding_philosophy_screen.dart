@@ -1,4 +1,4 @@
-import 'package:app/screens/home_dashboard_screen.dart';
+import 'package:app/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingPhilosophyScreen extends StatelessWidget {
@@ -244,7 +244,7 @@ class OnboardingPhilosophyScreen extends StatelessWidget {
         child: MaterialButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreen()),
             );
           },
           child: Row(
