@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:app/widgets/animations.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
@@ -23,6 +24,7 @@ class HomeDashboardScreen extends StatelessWidget {
       backgroundColor: Color(0xFF09090B),
       expandedHeight: 120.0,
       pinned: true,
+      automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: EdgeInsets.only(left: 16, bottom: 16),
         title: Text(
@@ -104,8 +106,10 @@ class HomeDashboardScreen extends StatelessWidget {
     required IconData buttonIcon,
     bool isPrimaryButton = false,
   }) {
-    return Container(
-      decoration: BoxDecoration(
+    return AnimatedTapScale(
+      onTap: () {},
+      child: Container(
+        decoration: BoxDecoration(
         color: const Color(0xFF18181B),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
@@ -195,6 +199,7 @@ class HomeDashboardScreen extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -215,7 +220,7 @@ class HomeDashboardScreen extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 200,
+            height: 207,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.all(16),
@@ -246,9 +251,11 @@ class HomeDashboardScreen extends StatelessWidget {
     required String title,
     required String subtitle,
   }) {
-    return Container(
-      width: 280,
-      decoration: BoxDecoration(
+    return AnimatedTapScale(
+      onTap: () {},
+      child: Container(
+        width: 280,
+        decoration: BoxDecoration(
         color: const Color(0xFF18181B),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
@@ -287,6 +294,7 @@ class HomeDashboardScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

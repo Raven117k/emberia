@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildForm(BuildContext context) {
-    final theme = Theme.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

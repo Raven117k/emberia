@@ -1,3 +1,4 @@
+import 'package:app/screens/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class UserProfileScreen extends StatelessWidget {
@@ -15,7 +16,7 @@ class UserProfileScreen extends StatelessWidget {
               _buildProfileContent(),
             ],
           ),
-          _buildBottomBar(),
+          _buildBottomBar(context),
         ],
       ),
     );
@@ -223,7 +224,8 @@ class UserProfileScreen extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text(content, style: const TextStyle(color: Colors.white, fontSize: 16)),
+          Text(content,
+              style: const TextStyle(color: Colors.white, fontSize: 16)),
         ],
       ),
     );
@@ -258,7 +260,8 @@ class UserProfileScreen extends StatelessWidget {
       {bool isAddButton = false}) {
     return Chip(
       avatar: Icon(icon,
-          color: isAddButton ? const Color(0xFF9CA3AF) : const Color(0xFFE15978)),
+          color:
+              isAddButton ? const Color(0xFF9CA3AF) : const Color(0xFFE15978)),
       label: Text(label),
       backgroundColor: const Color(0xFF1C1A26),
       labelStyle: TextStyle(
@@ -276,7 +279,7 @@ class UserProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(BuildContext context) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -295,8 +298,7 @@ class UserProfileScreen extends StatelessWidget {
               Row(
                 children: const [
                   SizedBox(width: 8),
-                  CircleAvatar(
-                      radius: 5, backgroundColor: Color(0xFF22C55E)),
+                  CircleAvatar(radius: 5, backgroundColor: Color(0xFF22C55E)),
                   SizedBox(width: 8),
                   Text("Profile Visible",
                       style: TextStyle(
@@ -306,18 +308,32 @@ class UserProfileScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.visibility, color: Color(0xFF9CA3AF)),
+                    icon:
+                        const Icon(Icons.visibility, color: Color(0xFF9CA3AF)),
                     onPressed: () {},
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileEditScreen(),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE15978),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text("Edit Profile"),
+                    child: const Text(
+                      "Edit Profile",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
