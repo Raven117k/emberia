@@ -1,4 +1,5 @@
 import 'package:app/screens/edit_profile_screen.dart';
+import 'package:app/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class UserProfileScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class UserProfileScreen extends StatelessWidget {
         children: [
           CustomScrollView(
             slivers: [
-              _buildAppBar(),
+              _buildAppBar(context),
               _buildProfileContent(),
             ],
           ),
@@ -22,7 +23,7 @@ class UserProfileScreen extends StatelessWidget {
     );
   }
 
-  SliverAppBar _buildAppBar() {
+  SliverAppBar _buildAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 400.0,
       backgroundColor: Colors.transparent,
@@ -51,7 +52,20 @@ class UserProfileScreen extends StatelessWidget {
         ),
       ),
       leading: _buildAppBarButton(Icons.arrow_back),
-      actions: [_buildAppBarButton(Icons.settings)],
+      // actions: [_buildAppBarButton(Icons.settings)],
+      actions: [
+    IconButton(
+      icon: const Icon(Icons.settings, color: Colors.white),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const AppSettingsScreen(),
+          ),
+        );
+      },
+    ),
+  ],
     );
   }
 
