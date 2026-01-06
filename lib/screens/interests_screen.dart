@@ -1,3 +1,4 @@
+import 'package:app/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 
 class InterestsScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                 _buildGrid(),
               ],
             ),
-            _buildContinueButton(),
+            _buildContinueButton(context),
           ],
         ),
       ),
@@ -262,7 +263,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
     );
   }
 
-  Widget _buildContinueButton() {
+  Widget _buildContinueButton(BuildContext context) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -279,7 +280,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
           ),
         ),
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFE14D74),
             padding: const EdgeInsets.symmetric(vertical: 16),

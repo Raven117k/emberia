@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           _buildTabs(context),
           const SizedBox(height: 24),
-          _buildPhoneInput(context),
+          _buildEmailInput(context),
           const SizedBox(height: 24),
           _buildContinueButton(context),
           const SizedBox(height: 16),
@@ -104,38 +104,24 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
-              ),
-              child: Center(
-                child: Text(
-                  'Phone',
-                  style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
-                ),
-              ),
-            ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'Email',
+            style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
           ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Email',
-                style: theme.textTheme.bodyMedium,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildPhoneInput(BuildContext context) {
+  Widget _buildEmailInput(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,47 +129,58 @@ class _LoginScreenState extends State<LoginScreen> {
         Padding(
           padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
           child: Text(
-            'PHONE NUMBER',
+            'EMAIL ADDRESS',
             style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1C20), // Specific input color
+            color: const Color(0xFF1E1C20),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Row(
-                  children: [
-                    Text(
-                      'US +1',
-                      style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-                    ),
-                    Icon(
-                      Icons.expand_more,
-                      color: theme.textTheme.bodyMedium?.color,
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 1,
-                height: 30,
-                color: Colors.white.withOpacity(0.1),
-              ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 16),
               Expanded(
                 child: TextField(
-                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 18),
-                  keyboardType: TextInputType.phone,
+                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 16),
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: '(555) 000-0000',
+                    hintText: 'you@domain.com',
                     hintStyle: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFF6B7280)),
                     border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
+          child: Text(
+            'PASSWORD',
+            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1C20),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 16),
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your password',
+                    hintStyle: theme.textTheme.bodyLarge?.copyWith(color: const Color(0xFF6B7280)),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -271,8 +268,6 @@ class _LoginScreenState extends State<LoginScreen> {
         Row(
           children: [
             Expanded(child: _buildSocialButton(context, 'Google')),
-            const SizedBox(width: 16),
-            Expanded(child: _buildSocialButton(context, 'Apple')),
           ],
         ),
       ],

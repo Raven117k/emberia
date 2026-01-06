@@ -1,3 +1,4 @@
+import 'package:app/screens/basic_info_screen.dart';
 import 'package:app/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -244,7 +245,7 @@ class OnboardingPhilosophyScreen extends StatelessWidget {
         child: MaterialButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const MainScreen()),
+              MaterialPageRoute(builder: (context) => const BasicInfoScreen()),
             );
           },
           child: Row(

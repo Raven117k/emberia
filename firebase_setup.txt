@@ -1,0 +1,175 @@
+Firebase setup for Emberia (chatting app)
+
+Summary
+- Purpose: describe recommended Firebase products, data model, security rules, Cloud Functions, and operational suggestions to support the app features (authentication, user profiles, matching, chat messages, presence, media, notifications, moderation, settings, reputation).
+
+Firebase Products to enable
+- Firebase Authentication: Email/Password, Google Sign-In, Phone (optional). Store provider metadata in `users` documents.
+- Cloud Firestore: primary database for users, conversations, messages metadata, matches, reports, settings, reputations, notifications.
+- Realtime Database (RTDB): preferred for presence and typing indicators (low-latency, small payloads). Use `/status/{uid}` and `/typing/{conversationId}/{uid}`.
+- Firebase Storage: store user profile photos, message media (images, audio, video). Restrict size and MIME types in rules.
+- Cloud Functions: server-side logic for delivering push notifications, updating aggregated fields, moderation workflows, and cleanup tasks.
+- Firebase Cloud Messaging (FCM): push notifications for new messages, matches, reports, and system alerts.
+- Firebase Analytics (optional but recommended): track core events (message_sent, message_read, match_created, profile_edit).
+
+High-level design principles
+- Keep chat message payloads small in Firestore (store media in Storage and put URLs in messages).
+- Use subcollections for messages under a conversation document: `conversations/{conversationId}/messages/{messageId}`.
+- Generate deterministic `conversationId` for 1:1 chats by sorting UIDs and joining with an underscore (e.g., `uidA_uidB`). Group chats use a generated id.
+- Use RTDB for presence and typing; sync lastSeen to Firestore via Cloud Functions.
+- Enforce strict security rules so users can only read/write their allowed documents.
+
+Firestore data model (recommended)
+
+1) users (collection)
+ - Document ID: `uid` (same as Firebase Auth uid)
+ - Fields:
+   - `displayName`: string
+   - `email`: string
+   - `photoUrl`: string
+   - `location`: string (or map with city, region)
+   - `age`: number
+   - `bio`: string
+   - `gender`: string
+   - `orientation`: string
+   - `connectionStyle`: string
+   - `interests`: array<string>
+   - `profileVisible`: bool
+   - `reputation`: map { `score`: number, `votes`: number }
+   - `settings`: map (user preferences)
+   - `createdAt`: timestamp
+   - `updatedAt`: timestamp
+   - `lastSeen`: timestamp (updated via Cloud Function from RTDB)
+
+2) conversations (collection)
+ - Document ID: `conversationId` (deterministic for 1:1 or generated for groups)
+ - Fields:
+   - `participants`: array<string> (UIDs)
+   - `type`: string ("direct" | "group")
+   - `title`: string (optional for group)
+   - `photoUrl`: string (optional)
+   - `lastMessage`: map { `text`, `type`, `senderId`, `createdAt` }
+   - `unreadCounts`: map<uid, number> (optional aggregated counts)
+   - `lastUpdated`: timestamp
+
+3) messages (subcollection)
+ - Path: `conversations/{conversationId}/messages/{messageId}`
+ - Fields:
+   - `senderId`: string
+   - `text`: string (nullable if media)
+   - `type`: string ("text" | "image" | "audio" | "video" | "system")
+   - `mediaUrl`: string (Storage URL or ref)
+   - `createdAt`: timestamp
+   - `status`: string ("sent" | "delivered" | "read")
+   - `reactions`: map<emoji, array<uid>> or map<uid, emoji>
+   - `replyTo`: messageId (optional)
+   - `size`: number (optional, for media size enforcement)
+
+4) matches (collection) or `users/{uid}/matches` subcollection
+ - Store match relationships, matchedAt, and optionally conversationId
+ - Fields: `withUid`, `status` (liked/matched/blocked), `matchedAt`, `conversationId`
+
+5) reports (collection)
+ - Fields: `reporterId`, `reportedUserId`, `reason`, `messageId` (optional), `status`, `createdAt`
+
+6) notifications (subcollection under user)
+ - Path: `users/{uid}/notifications/{notificationId}`
+ - Fields: `type`, `title`, `body`, `data` (map), `read`: bool, `createdAt`
+
+7) blocks (per-user subcollection)
+ - Path: `users/{uid}/blocks/{blockedUid}` or `users/{uid}/blocked` as docs
+
+Realtime Database structure (presence & typing)
+- `/status/{uid}`: { state: 'online'|'offline'|'away', last_changed: timestamp }
+- `/typing/{conversationId}/{uid}`: boolean or timestamp
+- Keep RTDB paths small and low-cardinality.
+
+Storage layout
+- `user_photos/{uid}/profile.jpg` (or store multiple sizes)
+- `user_photos/{uid}/gallery/{filename}`
+- `message_media/{conversationId}/{messageId}/{filename}`
+- Enforce max file size (e.g., 10MB) and allowed MIME types in Storage rules.
+
+Security rules (high-level)
+- Firestore:
+  - `match`: `request.auth != null` for all rules.
+  - `users/{uid}`: allow read to others if `profileVisible==true` (or to friends/matches), allow write only if `request.auth.uid == uid` (except trusted server calls via admin SDK or Cloud Functions).
+  - `conversations/{conversationId}`: read/write only if `request.auth.uid` is in `resource.data.participants` or `request.resource.data.participants` when creating.
+  - `conversations/{conversationId}/messages/{messageId}`: allow create only for participants; allow update/delete only by sender or server (Cloud Functions) with validation on field shapes and sizes.
+  - `users/{uid}/notifications/{id}`: only writable by Cloud Functions (server) and readable by owner.
+- RTDB: restrict `status/{uid}` to owner writes (and connections via onDisconnect). Allow reads for other users if necessary to show presence for matched users only.
+- Storage: allow read per `profileVisible` and conversation membership; allow write only by owner when uploading profile images or by participants when uploading message media. Validate file size and contentType.
+
+Security rules examples (notes)
+- Validate field types and string lengths to avoid large writes.
+- Prevent writes to `lastSeen`/`status` in Firestore directly; update via Cloud Functions synced from RTDB to avoid spoofing.
+
+Cloud Functions (recommended triggers)
+- onMessageCreate (Firestore):
+  - Validate message content, enforce profanity filters or moderation hooks.
+  - Update `conversations/{conversationId}.lastMessage` and `lastUpdated` atomically.
+  - Increment unread counters for other participants.
+  - Send FCM push to recipients (their devices) with message preview and data payload.
+- onConversationCreate: ensure participants exist and create metadata.
+- onUserStatusChange (RTDB): sync `users/{uid}.lastSeen` in Firestore.
+- onUserDelete: clean up Storage and references (or mark as deleted for audit).
+- moderation functions: create workflows to flag and escalate content for human review.
+
+Push notifications
+- Use FCM with device tokens stored in `users/{uid}/devices/{deviceId}` with `token`, `platform`, `lastActive`.
+- Cloud Function sends FCM on message creation and other important events.
+- Respect user notification settings in `users/{uid}.settings.notifications`.
+
+Indexes and queries
+- Index `conversations` on `lastUpdated` for listing recents.
+- Consider composite index for queries like `conversations where participants array-contains uid order by lastUpdated desc` (Firestore supports `array-contains` but not combining multiple array-contains).
+- For 1:1 conversation lookup, generate deterministic conversationId so no search required.
+
+Offline and message delivery semantics
+- Use Firestore offline persistence on client.
+- Use optimistic UI: create local message with `status: sending` then replace upon server ack.
+- Use message `status` transitions: `sending` -> `sent` -> `delivered` -> `read` via client updates (or Cloud Functions + receipts).
+
+Scalability and cost considerations
+- Store only small message metadata in Firestore; move large blobs to Storage.
+- Keep frequent updates (presence, typing) in RTDB to avoid Firestore write costs.
+- Use batched writes when updating multiple docs (e.g., updating `lastMessage` and adding `message` in one transaction) to reduce inconsistency.
+
+Analytics and monitoring
+- Log events: `message_sent`, `message_received`, `message_read`, `match_made`, `profile_update`, `report_submitted`.
+- Use Crashlytics for client crashes.
+- Monitor Firestore write/read and Storage bandwidth usage; set budget alerts on the Firebase/GCP billing console.
+
+Data retention, privacy, and compliance
+- Provide a clear delete user flow: delete user auth, remove or anonymize profile data, delete messages/media (or mark pseudonymized) per user request and legal requirements.
+- Keep minimal personal data in the database and document retention policies.
+- Consider data export tool for user data requests.
+
+Emulator and testing
+- Use Firebase Emulators (Auth, Firestore, RTDB, Functions, Storage) for local dev and tests.
+- Write security rules unit tests to verify read/write restrictions.
+
+Quick implementation checklist
+1. Enable Authentication and add providers (Email + Google recommended).
+2. Enable Firestore and create the `users`, `conversations`, `messages`, `reports`, and `notifications` collections.
+3. Enable Realtime Database and implement `/status` and `/typing` paths.
+4. Enable Storage and create folder structure and test upload & rules.
+5. Implement Cloud Functions: `onMessageCreate`, `onStatusChange`, push notifications, moderation hooks.
+6. Deploy security rules and test using the emulator.
+7. Set up analytics, Crashlytics, and budget alerts.
+
+Notes tailored to this repo (based on observed screens)
+- The app includes `login_screen`, `chat_screen`, `user_profile_screen`, `edit_profile_screen`, `settings_screen`, `match_screen` and `feed_screen`. Primary Firebase needs: Auth, Firestore for profiles & chats, Storage for images, RTDB for presence/typing, Cloud Functions for notifications.
+- Implement `profileVisible` field to support the bottom-bar "Profile Visible" toggle.
+- Implement reputation accumulation server-side (via Cloud Functions) to guard against client-side manipulation.
+
+Next steps for dev
+- Wire Auth to `users/{uid}` creation on first sign-in.
+- Create client-side services to read/write only allowed paths and respect offline behavior.
+- Add Cloud Function to create deterministic 1:1 conversation IDs and to create the conversation doc if it doesn't exist when first message is sent.
+- Add tests for security rules and a deployment runbook.
+
+References
+- Firebase docs: Firestore data modeling, Realtime Database presence, Cloud Storage security rules, Cloud Functions for Firebase, Firebase Emulator Suite.
+
+End of file

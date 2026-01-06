@@ -1,3 +1,4 @@
+import 'package:app/screens/interests_screen.dart';
 import 'package:flutter/material.dart';
 
 class BasicInfoScreen extends StatelessWidget {
@@ -13,7 +14,7 @@ class BasicInfoScreen extends StatelessWidget {
             _buildProgressBar(),
             _buildHeader(),
             Expanded(child: _buildForm()),
-            _buildContinueButton(),
+            _buildContinueButton(context),
           ],
         ),
       ),
@@ -203,11 +204,15 @@ class BasicInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContinueButton() {
+  Widget _buildContinueButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const InterestsScreen()),
+            );
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFE13D6E),
           padding: const EdgeInsets.symmetric(vertical: 16),
